@@ -33,7 +33,7 @@ function getDiceComment(rolls, count, faces) {
   const upper = M + 0.6745 * sigma; 
   
   let comment = total > upper ? 'すごいです！' : total < lower ? 'えっと、次がありますよ…！' : 'いい感じです！'; 
-  return `サイコロ振りますねー！\n${total}が出ました、\n${comment}`; 
+  return `サイコロ振りますねー！\n合計${total} [${rolls.join(', ')}] が出ました、\n${comment}`; 
 }
 
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
@@ -84,10 +84,10 @@ client.on('interactionCreate', async (interaction) => {
   }
   if (interaction.commandName === 'dice') {
     const match = interaction.options.getString('dice').match(/^(\d+)d(\d+)$/i);
-    if (!match) { await interaction.reply('えっと、ダイスの形式が正しくないですよ…！「1d6」や「3d10」のように入力してくださいね！'); return; }
+    if (!match) { await interaction.reply('えっと、ダイスの形式が正しくないですよ…！「1d6」や「3d10」のように入力してくださいね…！'); return; }
     const count = parseInt(match[1]); const faces = parseInt(match[2]);
     if (count > 50) { await interaction.reply('あべばべばばば！同時に振れるサイコロは50個までですよ……！'); return; }
-    if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしてくださいね…！'); return; }
+    if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしてくださいね！'); return; }
     await interaction.reply(getDiceComment(rollDice(count, faces), count, faces));
   }
 });
