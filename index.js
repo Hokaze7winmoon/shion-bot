@@ -64,10 +64,10 @@ client.on('interactionCreate', async (interaction) => {
   }
   if (interaction.commandName === 'dice') {
     const match = interaction.options.getString('dice').match(/^(\d+)d(\d+)$/i);
-    if (!match) { await interaction.reply('ダイスの形式が正しくありません。「1d6」や「3d10」のように入力してください。'); return; }
+    if (!match) { await interaction.reply('えっと、入力の形式が正しくないみたいですね…「1d6」や「3d10」のように入力してくださいね！'); return; }
     const count = parseInt(match[1]); const faces = parseInt(match[2]);
     if (count > 50) { await interaction.reply('あべばべばばば！同時に振れるサイコロは50個までですよ……！'); return; }
-    if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしてください。'); return; }
+    if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしましょう…！'); return; }
     await interaction.reply(getDiceComment(rollDice(count, faces), count, faces));
   }
 });
