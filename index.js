@@ -8,6 +8,9 @@ const clientId = process.env.DISCORD_CLIENT_ID;
 if (!token) { console.error('Error: DISCORD_TOKEN environment variable is not set.'); process.exit(1); }
 if (!clientId) { console.error('Error: DISCORD_CLIENT_ID environment variable is not set.'); process.exit(1); }
 
+// エラー回避のため、client本体を先につくっておきます
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+
 const DATA_FILE = './msgcount.json';
 function loadCounts() { try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch (_) { return {}; } }
 function saveCounts(data) { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); }
@@ -42,7 +45,6 @@ function getDiceComment(rolls, count, faces) {
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
 function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
 
-// Discordに登録するコマンドの名簿（/sister を復活させました！）
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
   new SlashCommandBuilder().setName('dice').setDescription('サイコロを振ります（例: 1d6, 3d10）').addStringOption(o => o.setName('dice').setDescription('ダイスの指定（例: 2d6）').setRequired(true)),
@@ -57,4 +59,10 @@ const MONITOR_CHANNEL_NAME = '紫苑bot監視（通知非推奨）';
 async function sendToMonitorChannel(message) {
   for (const guild of client.guilds.cache.values()) {
     const channel = guild.channels.cache.find(ch => ch.name === MONITOR_CHANNEL_NAME && ch.isTextBased());
-    if (channel) {
+    if (channel) { try { await channel.send(message); } catch (err) { console.error('通知送信失敗:', err.message); } }
+  }
+}
+
+client.once('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+  try { await rest.put(Routes.applicationCommands(clientId
