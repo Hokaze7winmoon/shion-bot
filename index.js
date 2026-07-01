@@ -36,9 +36,7 @@ function getDiceComment(rolls, count, faces) {
   const upper = M + 0.6745 * sigma; 
   let comment = total > upper ? 'すごいです！' : total < lower ? 'えっと、次がありますよ…！' : 'いい感じです！'; 
   return `サイコロ振りますねー！\n合計${total} [${rolls.join(', ')}] が出ました、\n${comment}`; 
-}
-
-function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
+}function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
 function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
 
 const commands = [
@@ -87,4 +85,22 @@ client.on('interactionCreate', async (interaction) => {
     const count = parseInt(match[1]); const faces = parseInt(match[2]);
     if (count > 50) { await interaction.reply('あべばべばばば！同時に振れるサイコロは50個までですよ……！'); return; }
     if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしてくださいね！'); return; }
-    await interaction.reply(getDiceComment(rollDice(
+    await interaction.reply(getDiceComment(rollDice(count, faces), count, faces));
+  }
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot || !message.guild) return;
+  incrementCount(message.guild.id, message.author.id);
+  const hasKeyword = tonetterKeywords.some(keyword => message.content.includes(keyword));
+  if (hasKeyword) { try { await message.reply('トネッターを発見しました…！'); } catch (err) { console.error('トネッター返信失敗:', err.message); } }
+});
+
+process.on('unhandledRejection', (reason) => { console.error('未処理のPromise拒否:', reason); });
+process.on('uncaughtException', (err) => { console.error('未捕捉の例外:', err.message); });
+
+let reconnectAttempts = 0;
+async function login() { try { await client.login(token); reconnectAttempts = 0; } catch (err) { reconnectAttempts++; const delay = Math.min(5000 * reconnectAttempts, 30000); console.error(`ログイン失敗。${delay/1000}秒後に再試行...`); setTimeout(login, delay); } }
+client.on('error', (err) => { console.error('クライアントエラー:', err.message); });
+
+login();
