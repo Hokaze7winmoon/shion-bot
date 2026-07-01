@@ -8,7 +8,8 @@ const clientId = process.env.DISCORD_CLIENT_ID;
 if (!token) { console.error('Error: DISCORD_TOKEN environment variable is not set.'); process.exit(1); }
 if (!clientId) { console.error('Error: DISCORD_CLIENT_ID environment variable is not set.'); process.exit(1); }
 
-// エラー回避のため、client本体を先につくっておきます
+// --- 1. すべての道具の定義（最上部にまとめました） ---
+const rest = new REST({ version: '10' }).setToken(token);
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 const DATA_FILE = './msgcount.json';
@@ -18,7 +19,7 @@ function incrementCount(guildId, userId) { const data = loadCounts(); if (!data[
 function getGuildCounts(guildId) { const data = loadCounts(); return data[guildId] || {}; }
 
 const phrases = ['きっとこの一言だけで世界は終わるよ','We Can Tryできるよ','そんなのってアリエナイよ…！','確定です！！','熱い情熱に染まって行く','私の意志は止められないの！','めくるめくミラクル♪','心に庭ができる…','呆れるほど欲張りだから！','どうか時間を戻して…！','心の声で叫べ！','親愛なるキミへ贈ろう','どんたん！どどたん！どんたどんどたん！','ちゅっどーん！','たとえすれ違ってもまた戻ってくるから','Strawberry？Lemon cider？'];
-const sisterPhrases = ['お許し致しましょう…！', 'えっと…そ、それはお許しできません！'];
+const sisterPhrases = ['お許し致しましょう…！', 'えっと…そ, それはお許しできません！'];
 
 // トネッター検知用のキーワードリスト
 const tonetterKeywords = ['トネイト', '高瀬統也', '野田愛実', '佐藤文哉', '末ひる', 'よんよん', 'ロザリーナ', 'Yuuki'];
@@ -42,27 +43,4 @@ function getDiceComment(rolls, count, faces) {
   return `サイコロ振りますねー！\n合計${total} [${rolls.join(', ')}] が出ました、\n${comment}`; 
 }
 
-function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
-function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
-
-const commands = [
-  new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
-  new SlashCommandBuilder().setName('dice').setDescription('サイコロを振ります（例: 1d6, 3d10）').addStringOption(o => o.setName('dice').setDescription('ダイスの指定（例: 2d6）').setRequired(true)),
-  new SlashCommandBuilder().setName('popporating').setDescription('単曲レートを計算します').addNumberOption(o => o.setName('譜面定数').setDescription('譜面定数（例: 13.5）').setRequired(true)).addNumberOption(o => o.setName('acc').setDescription('ACC（例: 99.75）').setRequired(true)),
-  new SlashCommandBuilder().setName('ranking').setDescription('このサーバーのメッセージ数ランキングTOP7を表示します'),
-  new SlashCommandBuilder().setName('sister').setDescription('許しを乞いましょう'),
-].map(cmd => cmd.toJSON());
-
-const rest = new REST({ version: '10' }).setToken(token);
-const MONITOR_CHANNEL_NAME = '紫苑bot監視（通知非推奨）';
-
-async function sendToMonitorChannel(message) {
-  for (const guild of client.guilds.cache.values()) {
-    const channel = guild.channels.cache.find(ch => ch.name === MONITOR_CHANNEL_NAME && ch.isTextBased());
-    if (channel) { try { await channel.send(message); } catch (err) { console.error('通知送信失敗:', err.message); } }
-  }
-}
-
-client.once('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-  try { await rest.put(Routes.applicationCommands(clientId
+function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 10
