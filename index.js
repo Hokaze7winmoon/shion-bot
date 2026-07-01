@@ -42,6 +42,7 @@ function getDiceComment(rolls, count, faces) {
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
 function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
 
+// Discordに登録するコマンドの名簿（/sister を復活させました！）
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
   new SlashCommandBuilder().setName('dice').setDescription('サイコロを振ります（例: 1d6, 3d10）').addStringOption(o => o.setName('dice').setDescription('ダイスの指定（例: 2d6）').setRequired(true)),
@@ -56,67 +57,4 @@ const MONITOR_CHANNEL_NAME = '紫苑bot監視（通知非推奨）';
 async function sendToMonitorChannel(message) {
   for (const guild of client.guilds.cache.values()) {
     const channel = guild.channels.cache.find(ch => ch.name === MONITOR_CHANNEL_NAME && ch.isTextBased());
-    if (channel) { try { await channel.send(message); } catch (err) { console.error('通知送信失敗:', err.message); } }
-  }
-}
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
-
-client.once('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-  try { await rest.put(Routes.applicationCommands(clientId), { body: commands }); console.log('Slash commands registered.'); } catch (err) { console.error(err); }
-  await sendToMonitorChannel('起動しました！コマンドが使えるようになりましたよ！');
-});
-
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName === 'sendword') { await interaction.reply(phrases[Math.floor(Math.random() * phrases.length)]); }
-  if (interaction.commandName === 'popporating') { const Lv = interaction.options.getNumber('譜面定数'); const ACC = interaction.options.getNumber('acc'); await interaction.reply(`この単曲レートは${calcRating(Lv, ACC).toFixed(4)}です！${getRatingMessage(ACC)}`); }
-  if (interaction.commandName === 'sister') { await interaction.reply(sisterPhrases[Math.floor(Math.random() * sisterPhrases.length)]); }
-  if (interaction.commandName === 'ranking') {
-    await interaction.deferReply();
-    const counts = getGuildCounts(interaction.guildId);
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const medals = ['🥇','🥈','🥉'];
-    const lines = [];
-    for (let i = 0; i < Math.min(7, sorted.length); i++) { const [uid, count] = sorted[i]; try { const m = await interaction.guild.members.fetch(uid); lines.push(`${medals[i] || `${i+1}位`} ${m.displayName} ${count}通`); } catch (_) { lines.push(`${medals[i] || `${i+1}位`} (不明) ${count}通`); } }
-    let reply = `📊 **メッセージ数ranking**\n\n${lines.join('\n')}`;
-    const myRank = sorted.findIndex(([uid]) => uid === interaction.user.id);
-    if (myRank >= 7 || myRank === -1) { try { const m = await interaction.guild.members.fetch(interaction.user.id); reply += `\n\n---\nあなた（${m.displayName}）は ${myRank === -1 ? 'ランク外' : `${myRank+1}位`} ${counts[interaction.user.id] || 0}通`; } catch (_) {} }
-    await interaction.editReply(reply);
-  }
-  if (interaction.commandName === 'dice') {
-    const match = interaction.options.getString('dice').match(/^(\d+)d(\d+)$/i);
-    if (!match) { await interaction.reply('えっと、ダイスの形式が正しくないですよ…！「1d6」や「3d10」のように入力してくださいね…！'); return; }
-    const count = parseInt(match[1]); const faces = parseInt(match[2]);
-    if (count > 50) { await interaction.reply('あべばべばばば！同時に振れるサイコロは50個までですよ……！'); return; }
-    if (count < 1 || faces < 1) { await interaction.reply('ダイスの数と面数は1以上にしてくださいね！'); return; }
-    await interaction.reply(getDiceComment(rollDice(count, faces), count, faces));
-  }
-});
-
-client.on('messageCreate', async (message) => {
-  if (message.author.bot || !message.guild) return;
-  
-  // メッセージカウントの加算
-  incrementCount(message.guild.id, message.author.id);
-
-  // トネッターキーワードの検出
-  const hasKeyword = tonetterKeywords.some(keyword => message.content.includes(keyword));
-  if (hasKeyword) {
-    try {
-      await message.reply('トネッターを発見しました…！');
-    } catch (err) {
-      console.error('トネッター返信失敗:', err.message);
-    }
-  }
-});
-
-process.on('unhandledRejection', (reason) => { console.error('未処理のPromise拒否:', reason); });
-process.on('uncaughtException', (err) => { console.error('未捕捉の例外:', err.message); });
-
-let reconnectAttempts = 0;
-async function login() { try { await client.login(token); reconnectAttempts = 0; } catch (err) { reconnectAttempts++; const delay = Math.min(5000 * reconnectAttempts, 30000); console.error(`ログイン失敗。${delay/1000}秒後に再試行...`); setTimeout(login, delay); } }
-client.on('error', (err) => { console.error('クライアントエラー:', err.message); });
-
-login();
+    if (channel) {
