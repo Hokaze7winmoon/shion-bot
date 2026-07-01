@@ -17,6 +17,9 @@ function getGuildCounts(guildId) { const data = loadCounts(); return data[guildI
 const phrases = ['きっとこの一言だけで世界は終わるよ','We Can Tryできるよ','そんなのってアリエナイよ…！','確定です！！','熱い情熱に染まって行く','私の意志は止められないの！','めくるめくミラクル♪','心に庭ができる…','呆れるほど欲張りだから！','どうか時間を戻して…！','心の声で叫べ！','親愛なるキミへ贈ろう','どんたん！どどたん！どんたどんどたん！','ちゅっどーん！','たとえすれ違ってもまた戻ってくるから','Strawberry？Lemon cider？'];
 const sisterPhrases = ['お許し致しましょう…！', 'えっと…そ、それはお許しできません！'];
 
+// トネッター検知用のキーワードリスト
+const tonetterKeywords = ['トネイト', '高瀬統也', '野田愛実', '佐藤文哉', '末ひる', 'よんよん', 'ロザリーナ', 'Yuuki'];
+
 function rollDice(count, faces) { const rolls = []; for (let i = 0; i < count; i++) rolls.push(Math.floor(Math.random() * faces) + 1); return rolls; }
 
 function getDiceComment(rolls, count, faces) { 
@@ -92,9 +95,21 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.on('messageCreate', (message) => {
+client.on('messageCreate', async (message) => {
   if (message.author.bot || !message.guild) return;
+  
+  // メッセージカウントの加算
   incrementCount(message.guild.id, message.author.id);
+
+  // トネッターキーワードの検出
+  const hasKeyword = tonetterKeywords.some(keyword => message.content.includes(keyword));
+  if (hasKeyword) {
+    try {
+      await message.reply('トネッターを発見しました…！');
+    } catch (err) {
+      console.error('トネッター返信失敗:', err.message);
+    }
+  }
 });
 
 process.on('unhandledRejection', (reason) => { console.error('未処理のPromise拒否:', reason); });
