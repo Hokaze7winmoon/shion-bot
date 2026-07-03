@@ -53,7 +53,7 @@ function getDiceComment(rolls, count, faces) {
   }
 }
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
-function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
+function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここ隔からです！'; }
 
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
@@ -118,8 +118,13 @@ client.on('interactionCreate', async (interaction) => {
       const content = options.getString('内容');
       let matchedReply = null;
       for (const [key, value] of Object.entries(dict)) { if (content.includes(key)) { matchedReply = value; break; } }
-      if (matchedReply) { await interaction.reply(matchedReply); } 
-      else { await interaction.reply(`何それ。なんて答えればいいか \`/jinkoumunou learn word:${content} reply:[返答]\` で教えてくれないかしら？`); }
+      
+      // ★出力フォーマットをご希望の形（引数＋返信）にカスタム！
+      if (matchedReply) { 
+        await interaction.reply(`「${content}」に対して返信\n＿＿${matchedReply}`); 
+      } else { 
+        await interaction.reply(`「${content}」に対して返信\n＿＿何それ。なんて答えればいいか \`/jinkoumunou learn word:${content} reply:[返答]\` で教えてくれないかしら？`); 
+      }
     }
     if (sub === 'learn') {
       const word = options.getString('word'); const reply = options.getString('reply');
