@@ -58,7 +58,9 @@ function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうござ
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
   new SlashCommandBuilder().setName('dice').setDescription('サイコロを振ります').addStringOption(o => o.setName('dice').setDescription('例: 2d6').setRequired(true)),
-  new SlashCommandBuilder().setName('popporating').setDescription('単曲レートを計算します').addNumberOption(o => o.setName('譜面定数').setRequired(true)).addNumberOption(o => o.setName('acc').setRequired(true)),
+  new SlashCommandBuilder().setName('popporating').setDescription('単曲レートを計算します')
+    .addNumberOption(o => o.setName('constant').setDescription('譜面定数を入力してください').setRequired(true))
+    .addNumberOption(o => o.setName('acc').setDescription('達成率(ACC)を入力してください').setRequired(true)),
   new SlashCommandBuilder().setName('ranking').setDescription('メッセージ数ランキングTOP7を表示します'),
   new SlashCommandBuilder().setName('sister').setDescription('許しを乞いましょう'),
   new SlashCommandBuilder().setName('jinkoumunou').setDescription('みんなで言葉を教え込む人工無脳の機能です')
@@ -85,7 +87,12 @@ client.on('interactionCreate', async (interaction) => {
   
   if (commandName === 'sendword') await interaction.reply(phrases[Math.floor(Math.random() * phrases.length)]);
   if (commandName === 'sister') await interaction.reply(sisterPhrases[Math.floor(Math.random() * sisterPhrases.length)]);
-  if (commandName === 'popporating') { const Lv = options.getNumber('譜面定数'); const ACC = options.getNumber('acc'); await interaction.reply(`この単曲レートは${calcRating(Lv, ACC).toFixed(4)}です！${getRatingMessage(ACC)}`); }
+  
+  if (commandName === 'popporating') { 
+    const Lv = options.getNumber('constant'); 
+    const ACC = options.getNumber('acc'); 
+    await interaction.reply(`この単曲レートは${calcRating(Lv, ACC).toFixed(4)}です！${getRatingMessage(ACC)}`); 
+  }
   
   if (commandName === 'ranking') {
     await interaction.deferReply();
