@@ -59,7 +59,7 @@ function getDiceComment(rolls, count, faces) {
   }
 }
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
-function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
+function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここ隔からです！'; }
 
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
@@ -67,9 +67,9 @@ const commands = [
   new SlashCommandBuilder().setName('popporating').setDescription('単曲レートを計算します').addNumberOption(o => o.setName('譜面定数').setRequired(true)).addNumberOption(o => o.setName('acc').setRequired(true)),
   new SlashCommandBuilder().setName('ranking').setDescription('メッセージ数ランキングTOP7を表示します'),
   new SlashCommandBuilder().setName('sister').setDescription('許しを乞いましょう'),
-  new SlashCommandBuilder().setName('jinkoumunou').setDescription('人工無脳機能')
-    .addSubcommand(sub => sub.setName('message').setDescription('人工無脳に話しかけます').addStringOption(o => o.setName('内容').setDescription('話しかける中身').setRequired(true)))
-    .addSubcommand(sub => sub.setName('learn').setDescription('人工無脳に言葉を教えます').addStringOption(o => o.setName('word').setDescription('この言葉に').setRequired(true)).addStringOption(o => o.setName('reply').setDescription('こう返す').setRequired(true))),
+  new SlashCommandBuilder().setName('jinkoumunou').setDescription('みんなで言葉を教え込む人工無脳の機能です')
+    .addSubcommand(sub => sub.setName('message').setDescription('人工無脳に話しかけて会話を楽しみます').addStringOption(o => o.setName('内容').setDescription('話しかける中身').setRequired(true)))
+    .addSubcommand(sub => sub.setName('learn').setDescription('新しい言葉とそれに対する返答を教え込みます').addStringOption(o => o.setName('word').setDescription('この言葉に').setRequired(true)).addStringOption(o => o.setName('reply').setDescription('こう返す').setRequired(true))),
 ].map(cmd => cmd.toJSON());
 
 const MONITOR_CHANNEL_NAME = '紫苑bot監視（通知非推奨）';
