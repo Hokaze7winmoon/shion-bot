@@ -53,7 +53,7 @@ function getDiceComment(rolls, count, faces) {
   }
 }
 function calcRating(Lv, ACC) { return Lv * Math.pow((ACC / 100 - 0.55) / 0.45, 2); }
-function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここ隔からです！'; }
+function getRatingMessage(ACC) { if (ACC >= 100) return 'φおめでとうございます！すごいです！'; if (ACC >= 99.50) return '上出来だと思いますよ！'; if (ACC >= 99.00) return 'ばっちりです！'; if (ACC >= 98.00) return 'やりましたね！'; return 'ここからです！'; }
 
 const commands = [
   new SlashCommandBuilder().setName('sendword').setDescription('ランダムなフレーズを1つ送ります'),
@@ -88,6 +88,7 @@ client.on('interactionCreate', async (interaction) => {
   if (commandName === 'sendword') await interaction.reply(phrases[Math.floor(Math.random() * phrases.length)]);
   if (commandName === 'sister') await interaction.reply(sisterPhrases[Math.floor(Math.random() * sisterPhrases.length)]);
   
+  // ★options.getNumberの対象キーを'constant'に修正して計算バグを解決！
   if (commandName === 'popporating') { 
     const Lv = options.getNumber('constant'); 
     const ACC = options.getNumber('acc'); 
@@ -119,7 +120,6 @@ client.on('interactionCreate', async (interaction) => {
       let matchedReply = null;
       for (const [key, value] of Object.entries(dict)) { if (content.includes(key)) { matchedReply = value; break; } }
       
-      // ★出力フォーマットをご希望の形（引数＋返信）にカスタム！
       if (matchedReply) { 
         await interaction.reply(`「${content}」に対して返信\n＿＿${matchedReply}`); 
       } else { 
